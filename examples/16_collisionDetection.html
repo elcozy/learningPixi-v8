@@ -2,6 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <link rel="icon" type="image/png" href="./images/pixijs-logo.png" />
+
         <title>Collision detection</title>
     </head>
     <body>
@@ -27,8 +29,7 @@
                     antialias: true,
                     transparent: false,
                     resolution: 1,
-                    background: "#061039",
-                    backgroundAlpha: 0.1,
+                    background: "#000000",
                 });
 
                 //Add the canvas that Pixi automatically created for you to the HTML document
@@ -116,7 +117,7 @@
                     const style = new TextStyle({
                         fontFamily: "sans-serif",
                         fontSize: 18,
-                        fill: "blue",
+                        fill: "#ffffff",
                     });
                     message = new Text({ text: "No collision...", style });
                     message.position.set(8, 8);

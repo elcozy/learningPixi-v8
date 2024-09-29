@@ -2,6 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <link rel="icon" type="image/png" href="./images/pixijs-logo.png" />
+
         <title>Displaying the canvas</title>
     </head>
     <body>
@@ -35,13 +37,13 @@
                 //The `app.canvas` is just an ordinary `<canvas>` element.
                 //Here's how you can reference to add an optional dashed
                 //border around the canvas
-                app.canvas.style.border = "5px dashed red";
+                app.canvas.style.border = "1px dashed black";
 
                 //To resize the canvas
                 app.renderer.resize(512, 512);
 
                 //To change the background color
-                app.renderer.background.color = "#068639";
+                app.renderer.background.color = 0x061639;
             })();
         </script>
     </body>

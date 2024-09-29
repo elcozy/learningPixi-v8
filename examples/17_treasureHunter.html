@@ -2,6 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <link rel="icon" type="image/png" href="./images/pixijs-logo.png" />
+
         <title>Treasure hunter</title>
     </head>
     <body>
@@ -26,8 +28,7 @@
                     antialias: true,
                     transparent: false,
                     resolution: 1,
-                    background: "#061039",
-                    backgroundAlpha: 0.3,
+                    background: "#000000",
                 });
 
                 //Add the canvas that Pixi automatically created for you to the HTML document
@@ -300,7 +301,7 @@
 
                     //Does the explorer have enough health? If the width of the `innerBar`
                     //is less than zero, end the game and display "You lost!"
-                    if (healthBar.outer.width < 0) {
+                    if (healthBar.outer.width <= 0) {
                         state = end;
                         message.text = "You lost!";
                     }
