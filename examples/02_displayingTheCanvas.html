@@ -1,46 +1,48 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Displaying the canvas</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Displaying the canvas</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Create a Pixi Application
+                const app = new PIXI.Application();
 
-//Create a Pixi Application
-const app = new PIXI.Application({ 
-    width: 256,
-    height: 256,
-    antialias: true,
-    transparent: false,
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 256,
+                    height: 256,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                });
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //If you want to make the canvas fill the entire window, you can apply this
+                //CSS styling:
 
-//If you want to make the canvas fill the entire window, you can apply this
-//CSS styling:
-/*
-app.renderer.view.style.position = "absolute"
-app.renderer.view.style.width = window.innerWidth + "px";
-app.renderer.view.style.height = window.innerHeight + "px";
-app.renderer.view.style.display = "block";
-*/
+                /*
+                // app.canvas.style.position = "absolute";
+                // app.canvas.style.width = window.innerWidth + "px";
+                // app.canvas.style.height = window.innerHeight + "px";
+                // app.canvas.style.display = "block";
+                */
 
-//The `renderer.view` is just an ordinary `<canvas>` element.
-//Here's how you can reference to add an optional dashed 
-//border around the canvas 
-app.renderer.view.style.border = "1px dashed black";
+                //The `app.canvas` is just an ordinary `<canvas>` element.
+                //Here's how you can reference to add an optional dashed
+                //border around the canvas
+                app.canvas.style.border = "5px dashed red";
 
-//To resize the canvas
-app.renderer.resize(512, 512);
+                //To resize the canvas
+                app.renderer.resize(512, 512);
 
-//To change the background color
-app.renderer.backgroundColor = 0x061639;
-
-</script>
-</body>
+                //To change the background color
+                app.renderer.background.color = "#068639";
+            })();
+        </script>
+    </body>
 </html>
