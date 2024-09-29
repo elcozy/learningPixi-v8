@@ -3,6 +3,8 @@
 A step-by-step introduction to making games and interactive media with
 the [Pixi rendering engine](https://github.com/pixijs/pixi.js). **[Updated for Pixi v8.4.1](https://github.com/pixijs/pixijs/releases/tag/v8.4.1)**.
 
+**[View Examples](/examples)**
+
 ### Table of contents
 
 1. [Introduction](#introduction)
