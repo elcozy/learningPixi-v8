@@ -1,259 +1,272 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Collision detection</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Collision detection</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Container = PIXI.Container,
+                    Texture = PIXI.Texture,
+                    Graphics = PIXI.Graphics,
+                    Assets = PIXI.Assets,
+                    Sprite = PIXI.Sprite,
+                    Text = PIXI.Text,
+                    TextStyle = PIXI.TextStyle;
 
-//Aliases
-const Application = PIXI.Application,
-    Container = PIXI.Container,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    Graphics = PIXI.Graphics,
-    TextureCache = PIXI.utils.TextureCache,
-    Sprite = PIXI.Sprite,
-    Text = PIXI.Text,
-    TextStyle = PIXI.TextStyle;
+                //Create a Pixi Application
+                const app = new Application();
 
-//Create a Pixi Application
-const app = new Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 256,
+                    height: 256,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                    backgroundAlpha: 0.1,
+                });
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-loader
-  .add("images/cat.png")
-  .load(setup);
+                //Define any variables that are used in more than one function
+                let cat, box, message, state;
 
-//Define any variables that are used in more than one function
-let cat, box, message, state;
+                await Assets.load("images/cat.png").then(setup);
 
-function setup() {
+                function setup() {
+                    //Create the box
+                    box = new Graphics();
+                    box.rect(0, 0, 64, 64).fill(0xccff99);
+                    box.x = 120;
+                    box.y = 96;
+                    app.stage.addChild(box);
 
-  //Create the box
-  box = new Graphics();
-  box.beginFill(0xCCFF99);
-  box.drawRect(0, 0, 64, 64);
-  box.endFill();
-  box.x = 120;
-  box.y = 96;
-  app.stage.addChild(box);
+                    //Create the `cat` sprite
+                    cat = new Sprite(Texture.from("images/cat.png"));
 
-  //Create the `cat` sprite 
-  cat = new Sprite(resources["images/cat.png"].texture);
-  cat.x = 16;
-  cat.y = 96; 
-  cat.vx = 0;
-  cat.vy = 0;
-  app.stage.addChild(cat);
+                    cat.x = 16;
+                    cat.y = 96;
+                    cat.vx = 0;
+                    cat.vy = 0;
+                    app.stage.addChild(cat);
 
-  //Capture the keyboard arrow keys
-  const left = keyboard(37),
-      up = keyboard(38),
-      right = keyboard(39),
-      down = keyboard(40);
+                    //Capture the keyboard arrow keys
+                    const left = keyboard(37),
+                        up = keyboard(38),
+                        right = keyboard(39),
+                        down = keyboard(40);
 
-  //Left arrow key `press` method
-  left.press = function() {
+                    //Left arrow key `press` method
+                    left.press = function () {
+                        //Change the cat's velocity when the key is pressed
+                        cat.vx = -5;
+                        cat.vy = 0;
+                    };
 
-    //Change the cat's velocity when the key is pressed
-    cat.vx = -5;
-    cat.vy = 0;
-  };
+                    //Left arrow key `release` method
+                    left.release = function () {
+                        //If the left arrow has been released, and the right arrow isn't down,
+                        //and the cat isn't moving vertically:
+                        //Stop the cat
+                        if (!right.isDown && cat.vy === 0) {
+                            cat.vx = 0;
+                        }
+                    };
 
-  //Left arrow key `release` method
-  left.release = function() {
+                    //Up
+                    up.press = function () {
+                        cat.vy = -5;
+                        cat.vx = 0;
+                    };
+                    up.release = function () {
+                        if (!down.isDown && cat.vx === 0) {
+                            cat.vy = 0;
+                        }
+                    };
 
-    //If the left arrow has been released, and the right arrow isn't down,
-    //and the cat isn't moving vertically:
-    //Stop the cat
-    if (!right.isDown && cat.vy === 0) {
-      cat.vx = 0;
-    }
-  };
+                    //Right
+                    right.press = function () {
+                        cat.vx = 5;
+                        cat.vy = 0;
+                    };
+                    right.release = function () {
+                        if (!left.isDown && cat.vy === 0) {
+                            cat.vx = 0;
+                        }
+                    };
 
-  //Up
-  up.press = function() {
-    cat.vy = -5;
-    cat.vx = 0;
-  };
-  up.release = function() {
-    if (!down.isDown && cat.vx === 0) {
-      cat.vy = 0;
-    }
-  };
+                    //Down
+                    down.press = function () {
+                        cat.vy = 5;
+                        cat.vx = 0;
+                    };
+                    down.release = function () {
+                        if (!up.isDown && cat.vx === 0) {
+                            cat.vy = 0;
+                        }
+                    };
 
-  //Right
-  right.press = function() {
-    cat.vx = 5;
-    cat.vy = 0;
-  };
-  right.release = function() {
-    if (!left.isDown && cat.vy === 0) {
-      cat.vx = 0;
-    }
-  };
+                    //Create the text sprite
+                    const style = new TextStyle({
+                        fontFamily: "sans-serif",
+                        fontSize: 18,
+                        fill: "blue",
+                    });
+                    message = new Text({ text: "No collision...", style });
+                    message.position.set(8, 8);
+                    app.stage.addChild(message);
 
-  //Down
-  down.press = function() {
-    cat.vy = 5;
-    cat.vx = 0;
-  };
-  down.release = function() {
-    if (!up.isDown && cat.vx === 0) {
-      cat.vy = 0;
-    }
-  };
+                    //Set the game state
+                    state = play;
 
-  //Create the text sprite
-  const style = new TextStyle({
-    fontFamily: "sans-serif",
-    fontSize: 18,
-    fill: "white",
-  }); 
-  message = new Text("No collision...", style);
-  message.position.set(8, 8);
-  app.stage.addChild(message);
+                    //Start the game loop
+                    app.ticker.add((delta) => gameLoop(delta));
+                }
 
-  //Set the game state
-  state = play;
- 
-  //Start the game loop 
-  app.ticker.add((delta) => gameLoop(delta));
-}
+                function gameLoop(delta) {
+                    //Update the current game state:
+                    state(delta);
+                }
 
+                function play(delta) {
+                    //use the cat's velocity to make it move
+                    //Added an option to bring cat from the other ends if it goes out of frame
+                    if (
+                        cat.x + cat.vx + cat.width >=
+                        app.screen.width + cat.width
+                    ) {
+                        cat.x = -cat.width;
+                    } else if (cat.x + cat.vx <= -cat.width) {
+                        cat.x = app.screen.width;
+                    } else {
+                        cat.x += cat.vx;
+                    }
 
-function gameLoop(delta) {
+                    if (
+                        cat.y + cat.vy + cat.height >=
+                        app.screen.height + cat.height
+                    ) {
+                        cat.y = -cat.height;
+                    } else if (cat.y + cat.vy <= -cat.height) {
+                        cat.y = app.screen.height;
+                    } else {
+                        cat.y += cat.vy;
+                    }
 
-  //Update the current game state:
-  state(delta);
-}
+                    //check for a collision between the cat and the box
+                    if (hitTestRectangle(cat, box)) {
+                        //if there's a collision, change the message text
+                        //and tint the box red
+                        message.text = "hit!";
+                        box.tint = 0xff3300;
+                    } else {
+                        //if there's no collision, reset the message
+                        //text and the box's color
+                        message.text = "No collision...";
+                        box.tint = 0xccff99;
+                    }
+                }
 
-function play(delta) {
+                //The `hitTestRectangle` function
+                function hitTestRectangle(r1, r2) {
+                    //Define the variables we'll need to calculate
+                    let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
-  //use the cat's velocity to make it move
-  cat.x += cat.vx;
-  cat.y += cat.vy;
+                    //hit will determine whether there's a collision
+                    hit = false;
 
-  //check for a collision between the cat and the box
-  if (hitTestRectangle(cat, box)) {
+                    //Find the center points of each sprite
+                    r1.centerX = r1.x + r1.width / 2;
+                    r1.centerY = r1.y + r1.height / 2;
+                    r2.centerX = r2.x + r2.width / 2;
+                    r2.centerY = r2.y + r2.height / 2;
 
-    //if there's a collision, change the message text
-    //and tint the box red
-    message.text = "hit!";
-    box.tint = 0xff3300;
-  } else {
+                    //Find the half-widths and half-heights of each sprite
+                    r1.halfWidth = r1.width / 2;
+                    r1.halfHeight = r1.height / 2;
+                    r2.halfWidth = r2.width / 2;
+                    r2.halfHeight = r2.height / 2;
 
-    //if there's no collision, reset the message
-    //text and the box's color
-    message.text = "No collision...";
-    box.tint = 0xccff99;
-  }
-}
+                    //Calculate the distance vector between the sprites
+                    vx = r1.centerX - r2.centerX;
+                    vy = r1.centerY - r2.centerY;
 
-//The `hitTestRectangle` function
-function hitTestRectangle(r1, r2) {
+                    //Figure out the combined half-widths and half-heights
+                    combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+                    combinedHalfHeights = r1.halfHeight + r2.halfHeight;
 
-  //Define the variables we'll need to calculate
-  let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+                    //Check for a collision on the x axis
+                    if (Math.abs(vx) < combinedHalfWidths) {
+                        //A collision might be occurring. Check for a collision on the y axis
+                        if (Math.abs(vy) < combinedHalfHeights) {
+                            //There's definitely a collision happening
+                            hit = true;
+                        } else {
+                            //There's no collision on the y axis
+                            hit = false;
+                        }
+                    } else {
+                        //There's no collision on the x axis
+                        hit = false;
+                    }
 
-  //hit will determine whether there's a collision
-  hit = false;
+                    //`hit` will be either `true` or `false`
+                    return hit;
+                }
 
-  //Find the center points of each sprite
-  r1.centerX = r1.x + r1.width / 2; 
-  r1.centerY = r1.y + r1.height / 2; 
-  r2.centerX = r2.x + r2.width / 2; 
-  r2.centerY = r2.y + r2.height / 2; 
+                //The `keyboard` helper function
+                function keyboard(keyCode) {
+                    const key = {};
+                    key.code = keyCode;
+                    key.isDown = false;
+                    key.isUp = true;
+                    key.press = undefined;
+                    key.release = undefined;
 
-  //Find the half-widths and half-heights of each sprite
-  r1.halfWidth = r1.width / 2;
-  r1.halfHeight = r1.height / 2;
-  r2.halfWidth = r2.width / 2;
-  r2.halfHeight = r2.height / 2;
+                    //The `downHandler`
+                    key.downHandler = function (event) {
+                        if (event.keyCode === key.code) {
+                            if (key.isUp && key.press) {
+                                key.press();
+                            }
+                            key.isDown = true;
+                            key.isUp = false;
+                        }
+                        event.preventDefault();
+                    };
 
-  //Calculate the distance vector between the sprites
-  vx = r1.centerX - r2.centerX;
-  vy = r1.centerY - r2.centerY;
+                    //The `upHandler`
+                    key.upHandler = function (event) {
+                        if (event.keyCode === key.code) {
+                            if (key.isDown && key.release) {
+                                key.release();
+                            }
+                            key.isDown = false;
+                            key.isUp = true;
+                        }
+                        event.preventDefault();
+                    };
 
-  //Figure out the combined half-widths and half-heights
-  combinedHalfWidths = r1.halfWidth + r2.halfWidth;
-  combinedHalfHeights = r1.halfHeight + r2.halfHeight;
-
-  //Check for a collision on the x axis
-  if (Math.abs(vx) < combinedHalfWidths) {
-
-    //A collision might be occurring. Check for a collision on the y axis
-    if (Math.abs(vy) < combinedHalfHeights) {
-
-      //There's definitely a collision happening
-      hit = true;
-    } else {
-
-      //There's no collision on the y axis
-      hit = false;
-    }
-  } else {
-
-    //There's no collision on the x axis
-    hit = false;
-  }
-
-  //`hit` will be either `true` or `false`
-  return hit;
-};
-
-
-//The `keyboard` helper function
-function keyboard(keyCode) {
-  const key = {};
-  key.code = keyCode;
-  key.isDown = false;
-  key.isUp = true;
-  key.press = undefined;
-  key.release = undefined;
-
-  //The `downHandler`
-  key.downHandler = function(event) {
-    if (event.keyCode === key.code) {
-      if (key.isUp && key.press) {
-        key.press();
-      }
-      key.isDown = true;
-      key.isUp = false;
-    }
-    event.preventDefault();
-  };
-
-  //The `upHandler`
-  key.upHandler = function(event) {
-    if (event.keyCode === key.code) {
-      if (key.isDown && key.release) {
-        key.release();
-      }
-      key.isDown = false;
-      key.isUp = true;
-    }
-    event.preventDefault();
-  };
-
-  //Attach event listeners
-  window.addEventListener("keydown", key.downHandler.bind(key), false);
-  window.addEventListener("keyup", key.upHandler.bind(key), false);
-  return key;
-}
-
-</script>
-</body>
+                    //Attach event listeners
+                    window.addEventListener(
+                        "keydown",
+                        key.downHandler.bind(key),
+                        false
+                    );
+                    window.addEventListener(
+                        "keyup",
+                        key.upHandler.bind(key),
+                        false
+                    );
+                    return key;
+                }
+            })();
+        </script>
+    </body>
 </html>
