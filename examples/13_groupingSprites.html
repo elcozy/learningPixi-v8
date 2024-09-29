@@ -1,115 +1,121 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Grouping sprites</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Grouping sprites</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Texture = PIXI.Texture,
+                    Assets = PIXI.Assets,
+                    Container = PIXI.Container,
+                    Sprite = PIXI.Sprite;
 
-//Aliases
-const Application = PIXI.Application,
-    Container = PIXI.Container,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    TextureCache = PIXI.utils.TextureCache,
-    Sprite = PIXI.Sprite;
+                //Create a Pixi Application
+                const app = new Application();
 
-//Create a Pixi Application
-const app = new Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 512,
+                    height: 512,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                    backgroundAlpha: 0.1,
+                });
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-//load a JSON file and run the `setup` function when it's done
-loader
-  .add("images/animals.json")
-  .load(setup);
+                //load a JSON file and run the `setup` function when it's done
+                await Assets.load("images/animals.json").then(setup);
 
+                function setup() {
+                    //There are three ways to make sprites from textures atlas frames
 
-function setup() {
-  //There are three ways to make sprites from textures atlas frames
+                    //Make the three animal sprites
 
-  //Make the three animal sprites
+                    //Create an alias for the texture atlas frame ids
+                    const id = Assets.cache.get("images/animals.json").textures;
 
-  //Create an alias for the texture atlas frame ids
-  const id = resources["images/animals.json"].textures;
+                    //The cat
+                    const cat = new Sprite(id["cat.png"]);
+                    cat.position.set(16, 16);
 
-  //The cat
-  const cat = new Sprite(id["cat.png"]);
-  cat.position.set(16, 16);
+                    //The hedgehog
+                    const hedgehog = new Sprite(id["hedgehog.png"]);
+                    hedgehog.position.set(32, 32);
 
-  //The hedgehog
-  const hedgehog = new Sprite(id["hedgehog.png"]);
-  hedgehog.position.set(32, 32);
+                    //The tiger
+                    const tiger = new Sprite(id["tiger.png"]);
+                    tiger.position.set(64, 64);
 
-  //The tiger
-  const tiger = new Sprite(id["tiger.png"]);
-  tiger.position.set(64, 64);
+                    //Group the animals
+                    const animals = new Container();
+                    animals.addChild(cat, hedgehog, tiger);
 
-  //Group the animals
-  const animals = new Container();
-  animals.addChild(cat);
-  animals.addChild(hedgehog);
-  animals.addChild(tiger);
+                    //Add the `animals` group to the stage
+                    app.stage.addChild(animals);
 
-  //Add the `animals` group to the stage
-  app.stage.addChild(animals);
+                    //Change the position of the group
+                    animals.position.set(64, 64);
 
-  //Change the position of the group
-  animals.position.set(64, 64);
+                    //Optionally change the group's width and height
+                    //animals.width = 200;
+                    //animals.height = 200;
 
-  //Optionally change the group's width and height
-  //animals.width = 200;
-  //animals.height = 200;
+                    //Find out what the `animal` groups's children are
 
-  //Find out what the `animal` groups's children are
+                    console.log(animals.children);
+                    //Displays: [Sprite, Sprite, Sprite]
 
-  console.log(animals.children);
-  //Displays: [Sprite, Sprite, Sprite]
+                    //Find out what the group's position and size is
 
-  //Find out what the group's position and size is
+                    console.log(animals.position);
+                    //Displays: Point{x: 0, y: 0 ...}
 
-  console.log(animals.position); 
-  //Displays: Point{x: 0, y: 0 ...}
+                    console.log(animals.width);
+                    //Displays: 112
 
-  console.log(animals.width);
-  //Displays: 112
+                    console.log(animals.height);
+                    //Displays: 112
 
-  console.log(animals.height);
-  //Displays: 112 
+                    //Find the cat's local position
+                    console.log(cat.x);
+                    //Displays: 16
 
-  //Find the cat's local position
-  console.log(cat.x);
-  //Displays: 16
-  
-  //Find the cat's global position
-  console.log(animals.toGlobal(cat.position));
-  //Displays: Point{x: 80, y: 80...};
+                    //Find the cat's global position
+                    console.log(animals.toGlobal(cat.position));
+                    //Displays: Point{x: 80, y: 80...};
 
-  //Use `getGlobalPosition` to find the sprite's 
-  //global position
-  console.log("Tiger world x: " + tiger.getGlobalPosition().x);
-  console.log("Tiger world y: " + tiger.getGlobalPosition().y);
+                    //Use `getGlobalPosition` to find the sprite's
+                    //global position
+                    console.log(
+                        "Tiger world x: " + tiger.getGlobalPosition().x
+                    );
+                    console.log(
+                        "Tiger world y: " + tiger.getGlobalPosition().y
+                    );
 
-  //Use `toLocal` to find a sprite's position relative to another sprite
-  console.log("Tiger local x: " + tiger.toLocal(tiger.position, hedgehog).x);
-  console.log("Tiger local y: " + tiger.toLocal(tiger.position, hedgehog).y);
-  
-  
-  //If you don't know what group the sprite belongs to, use the
-  //sprite's `parent` property.
-  //console.log(cat.parent.toGlobal(cat.position));
-}
+                    //Use `toLocal` to find a sprite's position relative to another sprite
+                    console.log(
+                        "Tiger local x: " +
+                            tiger.toLocal(tiger.position, hedgehog).x
+                    );
+                    console.log(
+                        "Tiger local y: " +
+                            tiger.toLocal(tiger.position, hedgehog).y
+                    );
 
-</script>
-</body>
+                    //If you don't know what group the sprite belongs to, use the
+                    //sprite's `parent` property.
+                    //console.log(cat.parent.toGlobal(cat.position));
+                }
+            })();
+        </script>
+    </body>
 </html>
