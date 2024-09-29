@@ -1,103 +1,103 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Graphic primitives</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Graphic primitives</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Texture = PIXI.Texture,
+                    Assets = PIXI.Assets,
+                    Graphics = PIXI.Graphics,
+                    Sprite = PIXI.Sprite;
 
-//Aliases
-const Application = PIXI.Application,
-    Container = PIXI.Container,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    Graphics = PIXI.Graphics,
-    TextureCache = PIXI.utils.TextureCache,
-    Sprite = PIXI.Sprite;
+                //Create a Pixi Application
+                const app = new Application();
 
-//Create a Pixi Application
-const app = new Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 512,
+                    height: 512,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                    backgroundAlpha: 0.1,
+                });
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-//Circle
-const circle = new Graphics();
-circle.beginFill(0x9966FF);
-circle.drawCircle(0, 0, 32);
-circle.endFill();
-circle.x = 64;
-circle.y = 130;
-app.stage.addChild(circle);
+                //Circle
+                const circle = new Graphics();
+                circle.circle(0, 0, 32).fill(0x9966ff);
+                circle.position.set(64, 130);
+                app.stage.addChild(circle);
+                // this.graphics.roundRect(0, 0, width, height, height * 0.2).fill(color);
 
-//Rectangle
-const rectangle = new Graphics();
-rectangle.lineStyle({width: 4, color: 0xFF3300, alpha: 1});
-rectangle.beginFill(0x66CCFF);
-rectangle.drawRect(0, 0, 64, 64);
-rectangle.endFill();
-rectangle.x = 170;
-rectangle.y = 170;
-app.stage.addChild(rectangle);
+                //Rectangle
+                const rectangle = new Graphics();
+                rectangle
+                    .drawRect(0, 0, 64, 64)
+                    .fill(0x66ccff)
+                    .stroke({ width: 4, color: 0xff3300, alpha: 1 });
+                rectangle.position.set(170, 170);
 
-//Line
-const line = new Graphics();
-line.lineStyle({width: 4, color: 0xFFFFFF, alpha: 1});
-line.moveTo(0, 0);
-line.lineTo(80, 50);
-line.x = 32;
-line.y = 32;
-app.stage.addChild(line);
+                app.stage.addChild(rectangle);
 
-//Ellipse
-const ellipse = new Graphics();
-ellipse.beginFill(0xFFFF00);
-ellipse.drawEllipse(0, 0, 50, 20);
-ellipse.endFill();
-ellipse.x = 180;
-ellipse.y = 130;
-app.stage.addChild(ellipse);
+                //Line
+                const line = new Graphics();
+                line.moveTo(0, 0)
+                    .lineTo(80, 50)
+                    .stroke({ width: 4, color: 0xff7fff, alpha: 1 });
+                line.position.set(32, 32);
 
-//Triangle
-const triangle = new Graphics();
-triangle.beginFill(0x66FF33);
+                app.stage.addChild(line);
 
-//Use `drawPolygon` to define the triangle as an
-//array of x/y positions
+                //Ellipse
+                const ellipse = new Graphics();
+                ellipse.ellipse(0, 0, 50, 20).fill(0xffff00);
+                ellipse.position.set(180, 130);
+                app.stage.addChild(ellipse);
 
-triangle.drawPolygon([
-    -32, 64,             //First point
-    32, 64,              //Second point
-    0, 0                 //Third point 
-]);
+                //Triangle
+                const triangle = new Graphics();
 
-triangle.endFill();
+                //Use `poly` to define the triangle as an
+                //array of x/y positions
 
-//Position the triangle after you've drawn it.
-//The triangle's x/y position is anchored to its first point in the path
-triangle.x = 180;
-triangle.y = 22;
+                triangle
+                    .poly([
+                        -32,
+                        64, //First point
+                        32,
+                        64, //Second point
+                        0,
+                        0, //Third point
+                    ])
+                    .fill(0x66ff33);
 
-app.stage.addChild(triangle);
+                //Position the triangle after you've drawn it.
+                //The triangle's x/y position is anchored to its first point in the path
+                triangle.x = 180;
+                triangle.y = 22;
 
-//Rounded rectangle
-const roundBox = new Graphics();
-roundBox.lineStyle({width: 4, color: 0x99CCFF, alpha: 1});
-roundBox.beginFill(0xFF9933);
-roundBox.drawRoundedRect(0, 0, 84, 36, 10)
-roundBox.endFill();
-roundBox.x = 48;
-roundBox.y = 190;
-app.stage.addChild(roundBox);
-</script>
-</body>
+                app.stage.addChild(triangle);
+
+                //Rounded rectangle
+                const roundBox = new Graphics();
+                roundBox.roundRect(0, 0, 84, 36, 10).fill(0xff9933).stroke({
+                    width: 4,
+                    color: 0x99ccff,
+                    alpha: 1,
+                });
+                roundBox.x = 48;
+                roundBox.y = 190;
+                app.stage.addChild(roundBox);
+            })();
+        </script>
+    </body>
 </html>
