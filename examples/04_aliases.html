@@ -1,54 +1,53 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Using aliases</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Using aliases</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Assets = PIXI.Assets,
+                    Sprite = PIXI.Sprite;
 
-//Aliases
-const Application = PIXI.Application,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    Sprite = PIXI.Sprite;
+                //Create a Pixi Application
+                const app = new Application();
 
-//Create a Pixi Application
-const app = new Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 256,
+                    height: 256,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                    backgroundAlpha: 0.1,
+                });
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-//load an image and run the `setup` function when it's done
-loader
-  .add("images/cat.png")
-  .load(setup);
+                //load an image and run the `setup` function when it's done
+                await Assets.load("images/cat.png").then(setup);
 
-//This `setup` function will run when the image has loaded
-function setup() {
+                //This `setup` function will run when the image has loaded
+                function setup(texture) {
+                    //Create the cat sprite
+                    const cat = new Sprite(texture);
 
-  //Create the cat sprite
-  const cat = new Sprite(resources["images/cat.png"].texture);
-  
-  //Add the cat to the stage
-  app.stage.addChild(cat);
+                    //Add the cat to the stage
+                    app.stage.addChild(cat);
 
-  //If you ever need to, here's how you can clean out WebGL's GPU
-  //memory manually
-  /*
-  Object.keys(TextureCache).forEach(function(texture) {
-    TextureCache[texture].destroy(true);
-  });
-  */
-}
-</script>
-</body>
+                    //If you ever need to, here's how you can clean out WebGL's GPU
+                    //memory manually
+                    /*
+                    // PIXI.Assets.cache.reset()
+                    // console.log(PIXI.Assets.cache);
+                    */
+                }
+            })();
+        </script>
+    </body>
 </html>
