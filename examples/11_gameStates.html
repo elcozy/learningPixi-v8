@@ -1,70 +1,72 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Game states</title>
-</head>
-<body>
-<script src="../pixi/pixi.min.js"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Game states</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Texture = PIXI.Texture,
+                    Assets = PIXI.Assets,
+                    Sprite = PIXI.Sprite;
 
-//Aliases
-const Application = PIXI.Application,
-    Container = PIXI.Container,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    TextureCache = PIXI.utils.TextureCache,
-    Sprite = PIXI.Sprite;
+                //Create a Pixi Application
+                const app = new Application();
 
-//Create a Pixi Application
-const app = new Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
-    resolution: 1
-  }
-);
+                await app.init({
+                    width: 256,
+                    height: 256,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#061039",
+                    backgroundAlpha: 0.1,
+                });
 
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-loader
-  .add("images/cat.png")
-  .load(setup);
+                //Define any variables that are used in more than one function
+                let cat, state;
 
-//Define any variables that are used in more than one function
-let cat, state;
+                await Assets.load("images/cat.png").then(setup);
 
-function setup() {
+                function setup() {
+                    //Create the `cat` sprite
+                    cat = new Sprite(Texture.from("images/cat.png"));
 
-  //Create the `cat` sprite 
-  cat = new Sprite(resources["images/cat.png"].texture);
-  cat.y = 96; 
-  cat.vx = 0;
-  cat.vy = 0;
-  app.stage.addChild(cat);
+                    cat.y = 96;
+                    cat.vx = 0;
+                    cat.vy = 0;
+                    app.stage.addChild(cat);
 
-  //Set the game state
-  state = play;
- 
-  //Start the game loop 
-  app.ticker.add((delta) => gameLoop(delta));
-}
+                    //Set the game state
+                    state = play;
 
-function gameLoop(delta) {
+                    //Start the game loop
+                    app.ticker.add((delta) => gameLoop(delta));
+                }
 
-  //Update the current game state:
-  state(delta);
-}
+                function gameLoop(delta) {
+                    //Update the current game state:
+                    state(delta);
+                }
 
-function play(delta) {
-
-  //Move the cat 1 pixel to the right each frame
-  cat.vx = 1
-  cat.x += cat.vx;
-}
-
-</script>
-</body>
+                function play(delta) {
+                    cat.vx = 1;
+                    if (
+                        cat.x + cat.width <= app.screen.width &&
+                        cat.y + cat.height <= app.screen.height
+                    ) {
+                        //Move the cat 1 pixel to the right each frame
+                        cat.x += cat.vx;
+                    }
+                }
+            })();
+        </script>
+    </body>
 </html>
