@@ -3318,22 +3318,8 @@ Taking it further
 
 ---
 
-Pixi can do a lot, but it can't do everything! If you want to start
-making games or complex interactive applications with Pixi, you'll need
-to use some helper libraries:
-
--   [Bump](https://github.com/kittykatattack/bump): A complete suite of 2D collision functions for games.
--   [Tink](https://github.com/kittykatattack/tink): Drag-and-drop, buttons, a universal pointer and other
-    helpful interactivity tools.
--   [Charm](https://github.com/kittykatattack/charm): Easy-to-use tweening animation effects for Pixi sprites.
--   [Dust](https://github.com/kittykatattack/dust): Particle effects for creating things like explosions, fire
-    and magic.
--   [Sprite Utilities](https://github.com/kittykatattack/spriteUtilities): Easier and more intuitive ways to
-    create and use Pixi sprites, as well adding a state machine and
-    animation player. Makes working with Pixi a lot more fun.
-
 You can find out how to use all these libraries with Pixi in the book
-[Learn PixiJS](http://www.springer.com/us/book/9781484210956).
+[Learn PixiJS](https://pixijs.com/8.x/guides).
 
 <a id='hexi'></a>
 
