@@ -761,99 +761,27 @@ All files loaded
 That's really cool, because you could use this as the basis for
 creating a loading progress bar.
 
-(Note: There are additional properties you can access on the
-`resource` object. `resource.error` will tell you of any possible
-error that happened while
-trying to load a file. `resource.data` lets you
-access the file's raw binary data.)
-
 <a id='moreaboutpixisloader'></a>
 
 #### More about Pixi's Loader
 
-Pixi's `Loader` is ridiculously feature-rich and configurable. Let's
+Pixi's `Assets` is ridiculously feature-rich and configurable. Let's
 take a quick bird's-eye view of its usage to
 get you started.
 
 The loader's chainable `add` method takes 4 basic arguments:
 
 ```js
-add(name, url, optionObject, callbackFunction);
+add({ alias: "{NAME_OF_ASSET}", src: "{SRC_OF_ASSET}" });
 ```
 
-Here's what the loader's source code documentation has to say about
-these parameters:
+(Note: If you ever need to reset the loader to load a new batch of files, call the loader's `reset` method: `PIXI.Assets.reset();`)
 
-`name` (string): The name of the resource to load. If it's not passed, the `url` is used.  
-`url` (string): The url for this resource, relative to the `baseUrl` of the loader.  
-`options` (object literal): The options for the load.  
-`options.crossOrigin` (Boolean): Is the request cross-origin? The default is to determine automatically.  
-`options.loadType`: How should the resource be loaded? The default value is `Resource.LOAD_TYPE.XHR`.  
-`options.xhrType`: How should the data being loaded be interpreted
-when using XHR? The default value is `Resource.XHR_RESPONSE_TYPE.DEFAULT`  
-`callbackFunction`: The function to call when this specific resource completes loading.
-
-The only one of these arguments that's required is the `url` (the file that you want to load.)
-
-Here are some examples of some ways you could use the `add`
-method to load files. These first ones are what the docs call the loader's "normal syntax":
-
-```js
-.add('key', 'http://...', function () {})
-.add('http://...', function () {})
-.add('http://...')
-```
-
-And these are examples of the loader's "object syntax":
-
-```js
-.add({
-  name: 'key2',
-  url: 'http://...'
-}, function () {})
-
-.add({
-  url: 'http://...'
-}, function () {})
-
-.add({
-  name: 'key3',
-  url: 'http://...',
-  onComplete: function () {}
-})
-
-.add({
-  url: 'https://...',
-  onComplete: function () {},
-  crossOrigin: true
-})
-```
-
-You can also pass the `add` method an array of objects, or urls, or
-both:
-
-```js
-.add([
-  {
-    name: 'key4',
-    url: 'http://...',
-    onComplete: function () {}
-  },
-  {
-    url: 'http://...',
-    onComplete: function () {}
-  },
-  'http://...'
-]);
-```
-
-(Note: If you ever need to reset the loader to load a new batch of files, call the loader's `reset` method: `PIXI.Loader.shared.reset();`)
-
-Pixi's `Loader` has many more advanced features, including options to
+Pixi's `Assets` has many more advanced features, including options to
 let you load and parse binary files of all types. This is not
 something you'll need to do on a day-to-day basis, and way outside the
 scope of this tutorial, so [make sure to check out the loader's GitHub repository
-for more information](https://github.com/englercj/resource-loader).
+for more information](https://pixijs.download/release/docs/assets.Assets.html).
 
 <a id='positioning'></a>
 Positioning sprites
@@ -880,7 +808,7 @@ function, after you've created the sprite.
 ```js
 function setup() {
     //Create the `cat` sprite
-    const cat = new Sprite(resources["images/cat.png"].texture);
+    const cat = new Sprite(Texture.from("images/cat.png"));
 
     //Change the sprite's position
     cat.x = 96;
@@ -892,9 +820,8 @@ function setup() {
 ```
 
 (Note: In this example,
-`Sprite` is an alias for `PIXI.Sprite`, `TextureCache` is an
-alias for `PIXI.utils.TextureCache`, and `resources` is an alias for
-`PIXI.Loader.shared.resources` as described earlier. I'll be
+`Sprite` is an alias for `PIXI.Sprite`, `Texture` is an
+alias for `PIXI.Texture` as described earlier. I'll be
 using aliases that follow this same format for all Pixi objects and
 methods in the example code from now on.)
 
@@ -938,7 +865,7 @@ Add those two lines of code to the `setup` function, like this:
 ```js
 function setup() {
     //Create the `cat` sprite
-    const cat = new Sprite(resources["images/cat.png"].texture);
+    const cat = new Sprite(Texture.from("images/cat.png"));
 
     //Change the sprite's position
     cat.x = 96;
@@ -1091,10 +1018,10 @@ the tileset.
 ![Rocket extracted from tileset](/examples/images/screenshots/10.png)
 
 Let's look at the code that does this. First, load the `tileset.png` image
-with Pixi’s `Loader`, just as you've done in earlier examples.
+with Pixi’s `Assets`, just as you've done in earlier examples.
 
 ```js
-loader.add("images/tileset.png").load(setup);
+await Assets.load("images/tileset.png").then(setup);
 ```
 
 Next, when the image has loaded, use a rectangular sub-section of the tileset to create the
@@ -1104,7 +1031,6 @@ the rocket sprite, and positions and displays it on the canvas.
 ```js
 function setup() {
     //Create the `tileset` sprite from the texture
-    const texture = TextureCache["images/tileset.png"];
 
     //Create a rectangle object that defines the position and
     //size of the sub-image you want to extract from the texture
@@ -1112,8 +1038,11 @@ function setup() {
     const rectangle = new Rectangle(192, 128, 64, 64);
 
     //Tell the texture to use that rectangular section
-    texture.frame = rectangle;
-
+    const texture = new Texture({
+        source: Texture.from("images/tileset.png"),
+        //Tell the texture to use that rectangular section
+        frame: rectangle,
+    });
     //Create the sprite from the texture
     const rocket = new Sprite(texture);
 
@@ -1278,11 +1207,11 @@ Loading the texture atlas
 To get the texture atlas into Pixi, load it using Pixi’s
 `Loader`. If the JSON file was made with Texture Packer, the
 `Loader` will interpret the data and create a texture from each
-frame on the tileset automatically. Here’s how to use the `Loader` to load the `treasureHunter.json`
+frame on the tileset automatically. Here’s how to use the `Assets` to load the `treasureHunter.json`
 file. When it has loaded, the `setup` function will run.
 
 ```js
-loader.add("images/treasureHunter.json").load(setup);
+await Assets.load("images/treasureHunter.json").then(setup);
 ```
 
 Each image on the tileset is now an individual texture in Pixi’s
@@ -1300,16 +1229,16 @@ Pixi gives you three general ways to create a sprite from a texture atlas:
 1. Using `TextureCache`:
 
 ```js
-const texture = TextureCache["frameId.png"],
+const texture = Texture.from("frameId.png"),
     sprite = new Sprite(texture);
 ```
 
-2. If you’ve used Pixi’s `Loader` to load the texture atlas, use the
-   loader’s `resources`:
+2. If you’ve used Pixi’s `Assets` to load the texture atlas, use the
+   loader’s `cache`:
 
 ```js
 const sprite = new Sprite(
-    resources["images/treasureHunter.json"].textures["frameId.png"]
+    Assets.cache.get("images/treasureHunter.json").textures["frameId.png"]
 );
 ```
 
@@ -1318,7 +1247,7 @@ const sprite = new Sprite(
    altas’s `textures` object, like this:
 
 ```js
-const id = resources["images/treasureHunter.json"].textures;
+const id = Assets.cache.get("images/treasureHunter.json").textures;
 ```
 
 Then you can just create each new sprite like this:
@@ -1341,14 +1270,14 @@ let dungeon, explorer, treasure, id;
 function setup() {
     //There are 3 ways to make sprites from textures atlas frames
 
-    //1. Access the `TextureCache` directly
-    const dungeonTexture = TextureCache["dungeon.png"];
+    //1. Access the `Texture` directly
+    const dungeonTexture = Texture.from("dungeon.png");
     dungeon = new Sprite(dungeonTexture);
     app.stage.addChild(dungeon);
 
     //2. Access the texture using through the loader's `resources`:
     explorer = new Sprite(
-        resources["images/treasureHunter.json"].textures["explorer.png"]
+        Assets.cache.get("images/treasureHunter.json").textures["explorer.png"]
     );
     explorer.x = 68;
 
@@ -1358,7 +1287,7 @@ function setup() {
 
     //3. Create an optional alias called `id` for all the texture atlas
     //frame id textures.
-    id = resources["images/treasureHunter.json"].textures;
+    id = Assets.cache.get("images/treasureHunter.json").textures;
 
     //Make the treasure box using the alias
     treasure = new Sprite(id["treasure.png"]);
@@ -1410,104 +1339,98 @@ loop, and assigned random positions.
     <body>
         <script src="../pixi/pixi.min.js"></script>
         <script>
-            //Aliases
-            const Application = PIXI.Application,
-                Container = PIXI.Container,
-                loader = PIXI.Loader.shared,
-                resources = PIXI.Loader.shared.resources,
-                TextureCache = PIXI.utils.TextureCache,
-                Sprite = PIXI.Sprite,
-                Rectangle = PIXI.Rectangle;
+            (async () => {
+                //Aliases
+                const Application = PIXI.Application,
+                    Assets = PIXI.Assets,
+                    Texture = PIXI.Texture,
+                    Sprite = PIXI.Sprite;
 
-            //Create a Pixi Application
-            const app = new Application({
-                width: 512,
-                height: 512,
-                antialias: true,
-                transparent: false,
-                resolution: 1,
-            });
+                //Create a Pixi Application
+                const app = new Application();
 
-            //Add the canvas that Pixi automatically created for you to the HTML document
-            document.body.appendChild(app.view);
+                await app.init({
+                    width: 512,
+                    height: 512,
+                    antialias: true,
+                    transparent: false,
+                    resolution: 1,
+                    background: "#000000",
+                });
 
-            //load a JSON file and run the `setup` function when it's done
-            loader.add("images/treasureHunter.json").load(setup);
+                //Add the canvas that Pixi automatically created for you to the HTML document
+                document.body.appendChild(app.canvas);
 
-            //Define variables that might be used in more
-            //than one function
-            let dungeon, explorer, treasure, door, id;
+                //Define variables that might be used in more
+                //than one function
+                let dungeon, explorer, treasure, door;
 
-            function setup() {
-                //There are 3 ways to make sprites from textures atlas frames
+                //load a JSON file and run the `setup` function when it's done
+                await Assets.load("images/treasureHunter.json").then(setup);
 
-                //1. Access the `TextureCache` directly
-                const dungeonTexture = TextureCache["dungeon.png"];
-                dungeon = new Sprite(dungeonTexture);
-                app.stage.addChild(dungeon);
+                function setup() {
+                    //There are 3 ways to make sprites from textures atlas frames
 
-                //2. Access the texture using throuhg the loader's `resources`:
-                explorer = new Sprite(
-                    resources["images/treasureHunter.json"].textures[
-                        "explorer.png"
-                    ]
-                );
-                explorer.x = 68;
+                    //1. Access the `Texture` directly
+                    const dungeonTexture = Texture.from("dungeon.png");
+                    dungeon = new Sprite(dungeonTexture);
+                    app.stage.addChild(dungeon);
 
-                //Center the explorer vertically
-                explorer.y = app.stage.height / 2 - explorer.height / 2;
-                app.stage.addChild(explorer);
+                    //2. Access the texture using throuhg the loader's `resources`:
+                    explorer = new Sprite(Texture.from("explorer.png"));
+                    explorer.x = 68;
 
-                //3. Create an optional alias called `id` for all the texture atlas
-                //frame id textures.
-                id = resources["images/treasureHunter.json"].textures;
+                    //Center the explorer vertically
+                    explorer.y = app.stage.height / 2 - explorer.height / 2;
+                    app.stage.addChild(explorer);
 
-                //Make the treasure box using the alias
-                treasure = new Sprite(id["treasure.png"]);
-                app.stage.addChild(treasure);
+                    //Make the treasure box using the alias
+                    treasure = new Sprite(Texture.from("treasure.png"));
+                    app.stage.addChild(treasure);
 
-                //Position the treasure next to the right edge of the canvas
-                treasure.x = app.stage.width - treasure.width - 48;
-                treasure.y = app.stage.height / 2 - treasure.height / 2;
-                app.stage.addChild(treasure);
+                    //Position the treasure next to the right edge of the canvas
+                    treasure.x = app.stage.width - treasure.width - 48;
+                    treasure.y = app.stage.height / 2 - treasure.height / 2;
+                    app.stage.addChild(treasure);
 
-                //Make the exit door
-                door = new Sprite(id["door.png"]);
-                door.position.set(32, 0);
-                app.stage.addChild(door);
+                    //Make the exit door
+                    door = new Sprite(Texture.from("door.png"));
+                    door.position.set(32, 0);
+                    app.stage.addChild(door);
 
-                //Make the blobs
-                const numberOfBlobs = 6,
-                    spacing = 48,
-                    xOffset = 150;
+                    //Make the blobs
+                    const numberOfBlobs = 6,
+                        spacing = 48,
+                        xOffset = 150;
 
-                //Make as many blobs as there are `numberOfBlobs`
-                for (let i = 0; i < numberOfBlobs; i++) {
-                    //Make a blob
-                    const blob = new Sprite(id["blob.png"]);
+                    //Make as many blobs as there are `numberOfBlobs`
+                    for (let i = 0; i < numberOfBlobs; i++) {
+                        //Make a blob
+                        const blob = new Sprite(Texture.from("blob.png"));
 
-                    //Space each blob horizontally according to the `spacing` value.
-                    //`xOffset` determines the point from the left of the screen
-                    //at which the first blob should be added.
-                    const x = spacing * i + xOffset;
+                        //Space each blob horizontally according to the `spacing` value.
+                        //`xOffset` determines the point from the left of the screen
+                        //at which the first blob should be added.
+                        const x = spacing * i + xOffset;
 
-                    //Give the blob a random y position
-                    //(`randomInt` is a custom function - see below)
-                    const y = randomInt(0, app.stage.height - blob.height);
+                        //Give the blob a random y position
+                        //(`randomInt` is a custom function - see below)
+                        const y = randomInt(0, app.stage.height - blob.height);
 
-                    //Set the blob's position
-                    blob.x = x;
-                    blob.y = y;
+                        //Set the blob's position
+                        blob.x = x;
+                        blob.y = y;
 
-                    //Add the blob sprite to the stage
-                    app.stage.addChild(blob);
+                        //Add the blob sprite to the stage
+                        app.stage.addChild(blob);
+                    }
                 }
-            }
 
-            //The `randomInt` helper function
-            function randomInt(min, max) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
+                //The `randomInt` helper function
+                function randomInt(min, max) {
+                    return Math.floor(Math.random() * (max - min + 1)) + min;
+                }
+            })();
         </script>
     </body>
 </html>
@@ -1638,33 +1561,34 @@ complete code:
 ```js
 //Aliases
 const Application = PIXI.Application,
-    Container = PIXI.Container,
-    loader = PIXI.Loader.shared,
-    resources = PIXI.Loader.shared.resources,
-    TextureCache = PIXI.utils.TextureCache,
-    Sprite = PIXI.Sprite,
-    Rectangle = PIXI.Rectangle;
+    Assets = PIXI.Assets,
+    Texture = PIXI.Texture,
+    Sprite = PIXI.Sprite;
 
 //Create a Pixi Application
-const app = new Application({
-    width: 256,
-    height: 256,
+const app = new Application();
+
+await app.init({
+    width: 512,
+    height: 512,
     antialias: true,
     transparent: false,
     resolution: 1,
+    background: "#000000",
 });
 
 //Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
+document.body.appendChild(app.canvas);
 
-loader.add("images/cat.png").load(setup);
+await Assets.load("images/cat.png").then(setup);
 
 //Define any variables that are used in more than one function
 let cat;
 
 function setup() {
     //Create the `cat` sprite
-    cat = new Sprite(resources["images/cat.png"].texture);
+    cat = new Sprite(Texture.from("images/cat.png"));
+
     cat.y = 96;
     app.stage.addChild(cat);
 
@@ -1721,7 +1645,8 @@ frame:
 ```js
 function setup() {
     //Create the `cat` sprite
-    cat = new Sprite(resources["images/cat.png"].texture);
+    cat = new Sprite(Texture.from("images/cat.png"));
+
     cat.y = 96;
     cat.vx = 0;
     cat.vy = 0;
@@ -1799,7 +1724,8 @@ let cat, state;
 
 function setup() {
     //Create the `cat` sprite
-    cat = new Sprite(resources["images/cat.png"].texture);
+    cat = new Sprite(Texture.from("images/cat.png"));
+
     cat.y = 96;
     cat.vx = 0;
     cat.vy = 0;
@@ -1934,7 +1860,8 @@ let cat, state;
 
 function setup() {
     //Create the `cat` sprite
-    cat = new Sprite(resources["images/cat.png"].texture);
+    cat = new Sprite(Texture.from("images/cat.png"));
+
     cat.y = 96;
     cat.vx = 0;
     cat.vy = 0;
@@ -2246,6 +2173,8 @@ times faster than they would if they were in a regular
 
 Create a `ParticleContainer` like this:
 
+ParticleContainer is not supported anymore in Pixi8 [FIND MORE HERE](https://pixijs.com/8.x/guides/migrations/v8?_highlight=particlecontainer#should-i-upgrade:~:text=I%20need%20the-,ParticleContainer,-%3F%20We%20have)
+
 ```js
 const superFastSprites = new ParticleContainer();
 ```
@@ -2344,32 +2273,26 @@ All shapes are made by first creating a new instance of Pixi's
 const rectangle = new Graphics();
 ```
 
-Use `beginFill` with a hexadecimal color code value to set the
+Use `fill` with a hexadecimal color code value to set the
 rectangle’ s fill color. Here’ how to set to it to light blue.
 
 ```js
-rectangle.beginFill(0x66ccff);
+rectangle.fill(0x66ccff);
 ```
 
-If you want to give the shape an outline, use the `lineStyle` method. Here's
+If you want to give the shape an outline, use the `stroke` method. Here's
 how to give the rectangle a 4 pixel wide red outline, with an `alpha`
 value of 1.
 
 ```js
-rectangle.lineStyle({ width: 4, color: 0xff3300, alpha: 1 });
+rectangle.stroke({ width: 4, color: 0xff3300, alpha: 1 });
 ```
 
-Use the `drawRect` method to draw the rectangle. Its four arguments
+Use the `rect` method to draw the rectangle. Its four arguments
 are `x`, `y`, `width` and `height`.
 
 ```js
-rectangle.drawRect(x, y, width, height);
-```
-
-Use `endFill` when you’re done.
-
-```js
-rectangle.endFill();
+rectangle.rect(x, y, width, height);
 ```
 
 It’s just like the Canvas Drawing API! Here’s all the code you need to
@@ -2377,10 +2300,11 @@ draw a rectangle, change its position, and add it to the stage.
 
 ```js
 const rectangle = new Graphics();
-rectangle.lineStyle({ width: 4, color: 0xff3300, alpha: 1 });
-rectangle.beginFill(0x66ccff);
-rectangle.drawRect(0, 0, 64, 64);
-rectangle.endFill();
+rectangle
+    .rect(0, 0, 64, 64)
+    .stroke({ width: 4, color: 0xff3300, alpha: 1 })
+    .fill(0x66ccff);
+
 rectangle.x = 170;
 rectangle.y = 170;
 app.stage.addChild(rectangle);
@@ -2396,7 +2320,7 @@ Make a circle with the `drawCircle` method. Its three arguments are
 `x`, `y` and `radius`
 
 ```js
-drawCircle(x, y, radius);
+circle(x, y, radius);
 ```
 
 Unlike rectangles and sprites, a circle’s x and y position is also its
@@ -2404,9 +2328,9 @@ center point. Here’s how to make a violet colored circle with a radius of 32 p
 
 ```js
 const circle = new Graphics();
-circle.beginFill(0x9966ff);
-circle.drawCircle(0, 0, 32);
-circle.endFill();
+circle.fill(0x9966ff);
+circle.circle(0, 0, 32);
+
 circle.x = 64;
 circle.y = 130;
 app.stage.addChild(circle);
@@ -2417,19 +2341,19 @@ app.stage.addChild(circle);
 ### Ellipses
 
 As a one-up on the Canvas Drawing API, Pixi lets you draw an ellipse
-with the `drawEllipse` method.
+with the `ellipse` method.
 
 ```js
-drawEllipse(x, y, width, height);
+ellipse(x, y, width, height);
 ```
 
 The x/y position defines the center of the ellipse. Here’s a yellow ellipse that’s 100 pixels wide and 40 pixels high.
 
 ```js
 const ellipse = new Graphics();
-ellipse.beginFill(0xffff00);
-ellipse.drawEllipse(0, 0, 50, 20);
-ellipse.endFill();
+ellipse.fill(0xffff00);
+ellipse.ellipse(0, 0, 50, 20);
+
 ellipse.x = 180;
 ellipse.y = 130;
 app.stage.addChild(ellipse);
@@ -2439,12 +2363,12 @@ app.stage.addChild(ellipse);
 
 ### Rounded rectangles
 
-Pixi also lets you make rounded rectangles with the `drawRoundedRect`
+Pixi also lets you make rounded rectangles with the `roundRect`
 method. The last argument, `cornerRadius` is a number in pixels that
 determines by how much the corners should be rounded.
 
 ```js
-drawRoundedRect(x, y, width, height, cornerRadius);
+roundRect(x, y, width, height, cornerRadius);
 ```
 
 Here's how to make a rounded rectangle with a corner radius of 10
@@ -2452,10 +2376,10 @@ pixels.
 
 ```js
 const roundBox = new Graphics();
-roundBox.lineStyle({ width: 4, color: 0x99ccff, alpha: 1 });
-roundBox.beginFill(0xff9933);
-roundBox.drawRoundedRect(0, 0, 84, 36, 10);
-roundBox.endFill();
+roundBox.stroke({ width: 4, color: 0x99ccff, alpha: 1 });
+roundBox.fill(0xff9933);
+roundBox.roundRect(0, 0, 84, 36, 10);
+
 roundBox.x = 48;
 roundBox.y = 190;
 app.stage.addChild(roundBox);
@@ -2465,14 +2389,14 @@ app.stage.addChild(roundBox);
 
 ### Lines
 
-You've seen in the examples above that the `lineStyle` method lets you
+You've seen in the examples above that the `stroke` method lets you
 define a line. You can use the `moveTo` and `lineTo` methods to draw the
 start and end points of the line, in just the same way you can with the Canvas
 Drawing API. Here’s how to draw a 4 pixel wide, white diagonal line.
 
 ```js
 const line = new Graphics();
-line.lineStyle({ width: 4, color: 0xffffff, alpha: 1 });
+line.stroke({ width: 4, color: 0xffffff, alpha: 1 });
 line.moveTo(0, 0);
 line.lineTo(80, 50);
 line.x = 32;
@@ -2489,18 +2413,18 @@ you've drawn them.
 ### Polygons
 
 You can join lines together and fill them with colors to make complex
-shapes using the `drawPolygon` method. `drawPolygon`'s argument is a
+shapes using the `polygon` method. `polygon`'s argument is a
 path array of x/y points that define the positions of each point on the
 shape.
 
 ```js
 const path = [point1X, point1Y, point2X, point2Y, point3X, point3Y];
 
-graphicsObject.drawPolygon(path);
+graphicsObject.polygon(path);
 ```
 
-`drawPolygon` will join those three points together to make the shape.
-Here’s how to use `drawPolygon` to connect three lines together to
+`polygon` will join those three points together to make the shape.
+Here’s how to use `polygon` to connect three lines together to
 make a red triangle with a blue border. The triangle is drawn at
 position 0,0 and then moved to its position on the stage using its
 `x` and `y` properties.
@@ -2521,9 +2445,6 @@ triangle.drawPolygon([
     0, //Third point
 ]);
 
-//Fill shape's color
-triangle.endFill();
-
 //Position the triangle after you've drawn it.
 //The triangle's x/y position is anchored to its first point in the path
 triangle.x = 180;
@@ -2539,7 +2460,7 @@ app.stage.addChild(triangle);
 Use a `Text` object (`PIXI.Text`) to display text on the stage. In its simplest form, you can do it like this:
 
 ```js
-const message = new Text("Hello Pixi!");
+const message = new Text({ text: "Hello Pixi!" });
 app.stage.addChild(message);
 ```
 
@@ -2570,12 +2491,12 @@ const style = new TextStyle({
 });
 ```
 
-That creates a new `style` object containing all the text styling that you'd like to use. For a complete list of all the style properties you can use, [see here](http://pixijs.download/v8.4.1/docs/PIXI.TextStyle.html).
+That creates a new `style` object containing all the text styling that you'd like to use. For a complete list of all the style properties you can use, [see here](https://pixijs.download/release/docs/text.TextStyle.html).
 
 To apply the style to the text, add the `style` object as the `Text` function's second argument, like this:
 
 ```js
-const message = new Text("Hello Pixi!", style);
+const message = new Text({ text: "Hello Pixi!", style });
 ```
 
 ![Displaying text](/examples/images/screenshots/24.5.png)
@@ -2626,7 +2547,7 @@ running.
 Add this `@font-face` rule to your HTML page's CSS style sheet.
 
 [Pixi also has support for bitmap
-fonts](http://pixijs.download/v8.4.1/docs/PIXI.BitmapText.html). You
+fonts](https://pixijs.download/release/docs/scene.BitmapText.html). You
 can use Pixi's loader to load Bitmap font XML files, the same way you
 load JSON or image files.
 
@@ -2922,7 +2843,7 @@ they're all added as children of the `gameScene`.
 
 ```js
 //Create an alias for the texture atlas frame ids
-id = resources["images/treasureHunter.json"].textures;
+id = Assets.cache.get("images/treasureHunter.json").textures;
 
 //Dungeon
 dungeon = new Sprite(id["dungeon.png"]);
@@ -3026,16 +2947,14 @@ gameScene.addChild(healthBar);
 
 //Create the black background rectangle
 const innerBar = new Graphics();
-innerBar.beginFill(0x000000);
-innerBar.drawRect(0, 0, 128, 8);
-innerBar.endFill();
+innerBar.fill(0x000000);
+innerBar.rect(0, 0, 128, 8);
 healthBar.addChild(innerBar);
 
 //Create the front red rectangle
 const outerBar = new Graphics();
-outerBar.beginFill(0xff3300);
-outerBar.drawRect(0, 0, 128, 8);
-outerBar.endFill();
+outerBar.fill(0xff3300);
+outerBar.rect(0, 0, 128, 8);
 healthBar.addChild(outerBar);
 
 healthBar.outer = outerBar;
@@ -3075,7 +2994,7 @@ const style = new TextStyle({
     fontSize: 64,
     fill: "white",
 });
-message = new Text("The End!", style);
+message = new Text({ text: "The End!", style });
 message.x = 120;
 message.y = app.stage.height / 2 - 32;
 gameOverScene.addChild(message);
@@ -3412,9 +3331,6 @@ to use some helper libraries:
 -   [Sprite Utilities](https://github.com/kittykatattack/spriteUtilities): Easier and more intuitive ways to
     create and use Pixi sprites, as well adding a state machine and
     animation player. Makes working with Pixi a lot more fun.
--   [Sound.js](https://github.com/kittykatattack/sound.js): A micro-library for loading, controlling and generating
-    sound and music effects. Everything you need to add sound to games.
--   [Smoothie](https://github.com/kittykatattack/smoothie): Ultra-smooth sprite animation using true delta-time interpolation. It also lets you specify the fps (frames-per-second) at which your game or application runs, and completely separates your sprite rendering loop from your application logic loop.
 
 You can find out how to use all these libraries with Pixi in the book
 [Learn PixiJS](http://www.springer.com/us/book/9781484210956).
@@ -3478,5 +3394,3 @@ JavaScript: ES6/2015. And, although the book's code is based on Pixi v3.x, it al
 
 If you want to support this project, please buy a copy of this book,
 and buy another copy for your mom!
-
-Or, make a generous donation to: http://www.msf.org
